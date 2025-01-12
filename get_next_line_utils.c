@@ -1,135 +1,117 @@
 #include "get_next_line.h"
+#include <stdlib.h>
 
-size_t	gnl_strlen(const char *str)
+int	found_newline(t_list *list)
 {
-    size_t	i;
+	int	i;
 
-    i = 0;
-    while (str[i])
-        i++;
-    return (i);
+	if (NULL == list)
+		return (0);
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i] && i < BUFFER_SIZE)
+		{
+			if (list->str_buf[i] == '\n')
+				return (1);
+			++i;
+		}
+		list = list->next;
+	}
+	return (0);
 }
 
-char	*gnl_strjoin(char *s1, char *s2)
+t_list	*find_last_node(t_list *list)
 {
-    size_t	len1;
-    size_t	len2;
-    size_t	i;
-    size_t	j;
-    char	*dest;
-
-    len1 = 0;
-    len2 = 0;
-    i = 0;
-    j = 0;
-    if (!s1 && !s2)
-        return (NULL);
-    if (s1)
-        len1 = gnl_strlen(s1);
-    if (s2)
-        len2 = gnl_strlen(s2);
-    dest = malloc(sizeof(char) * (len1 + len2 + 1));
-    if (!dest)
-        return (NULL);
-    if (s1)
-    {
-        while (s1[i])
-        {
-            dest[i] = s1[i];
-            i++;
-        }
-    }
-    if (s2)
-    {
-        while (s2[j])
-        {
-            dest[i] = s2[j];
-            i++;
-            j++;
-        }
-    }
-    dest[i] = '\0';
-    return (dest);
+	if (NULL == list)
+		return (NULL);
+	while (list->next)
+		list = list->next;
+	return (list);
 }
 
-char	*gnl_strchr(const char *s, int c)
+/*
+ * Copy (string\n]
+*/
+void	copy_str(t_list *list, char *str)
 {
-    size_t	i;
+	int	i;
+	int	k;
 
-    i = 0;
-    if (!s)
-        return (NULL);
-    while (s[i])
-    {
-        if (s[i] == (char)c)
-            return ((char *)(s + i));
-        i++;
-    }
-    if (s[i] == (char)c)
-        return ((char *)(s + i));
-    return (NULL);
+	if (NULL == list)
+		return ;
+	k = 0;
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i])
+		{
+			if (list->str_buf[i] == '\n')
+			{
+				str[k++] = '\n';
+				str[k] = '\0';
+				return ;
+			}
+			str[k++] = list->str_buf[i++];
+		}
+		list = list->next;
+	}
+	str[k] = '\0';
 }
 
-char	*extract_line(char *stash)
+/*
+ * find the len to new line in
+ * my linked list
+*/
+int	len_to_newline(t_list *list)
 {
-    size_t	i;
-    char	*line;
+	int	i;
+	int	len;
 
-    i = 0;
-    if (!stash[i])
-        return (NULL);
-    while (stash[i] && stash[i] != '\n')
-        i++;
-    if (stash[i] == '\n')
-        i++;
-    line = malloc(sizeof(char) * (i + 1));
-    if (!line)
-        return (NULL);
-    i = 0;
-    while (stash[i] && stash[i] != '\n')
-    {
-        line[i] = stash[i];
-        i++;
-    }
-    if (stash[i] == '\n')
-    {
-        line[i] = stash[i];
-        i++;
-    }
-    line[i] = '\0';
-    return (line);
+	if (NULL == list)
+		return (0);
+	len = 0;
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i])
+		{
+			if (list->str_buf[i] == '\n')
+			{
+				++len;
+				return (len);
+			}
+			++i;
+			++len;
+		}
+		list = list->next;
+	}	
+	return (len);
 }
 
-char	*clean_stash(char *stash)
+/*
+ * dealloc all from head
+ * set heat->NULL
+*/
+void	dealloc(t_list **list, t_list *clean_node, char *buf)
 {
-    size_t	i;
-    size_t	j;
-    char	*new_stash;
+	t_list	*tmp;
 
-    i = 0;
-    while (stash[i] && stash[i] != '\n')
-        i++;
-    if (stash[i] == '\n')
-        i++;
-    if (!stash[i])
-    {
-        free(stash);
-        return (NULL);
-    }
-    new_stash = malloc(sizeof(char) * (gnl_strlen(stash + i) + 1));
-    if (!new_stash)
-    {
-        free(stash);
-        return (NULL);
-    }
-    j = 0;
-    while (stash[i])
-    {
-        new_stash[j] = stash[i];
-        i++;
-        j++;
-    }
-    new_stash[j] = '\0';
-    free(stash);
-    return (new_stash);
+	if (NULL == *list)
+		return ;
+	while (*list)
+	{
+		tmp = (*list)->next;
+		free((*list)->str_buf);
+		free(*list);
+		*list = tmp;
+	}
+	*list = NULL;
+	if (clean_node->str_buf[0])
+		*list = clean_node;
+	else
+	{
+		free(buf);
+		free(clean_node);
+	}
 }

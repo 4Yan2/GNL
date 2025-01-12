@@ -1,21 +1,28 @@
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 10 
+# endif
+
+# include <fcntl.h>
 # include <stdlib.h>
 # include <unistd.h>
 
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 42
-#endif
+typedef struct s_list
+{
+	char			*str_buf;
+	struct s_list	*next;
+}				t_list;
 
-// Prototype de la fonction principale
+int		found_newline(t_list *list);
+t_list	*find_last_node(t_list *list);
+char	*get_ln(t_list *list);
+void	copy_str(t_list *list, char *str);
+int		len_to_newline(t_list *list);
+void	polish_list(t_list **list);
 char	*get_next_line(int fd);
-
-// Prototypes des fonctions utilitaires
-size_t	gnl_strlen(const char *s);
-char	*gnl_strjoin(char *s1, char *s2);
-char	*gnl_strchr(const char *s, int c);
-char	*extract_line(char *stash);
-char	*clean_stash(char *stash);
+void	dealloc(t_list **list, t_list *clean_node, char *buf);
+void	create_list(t_list **list, int fd);
 
 #endif
