@@ -99,6 +99,8 @@ void	dealloc(t_list **list, t_list *clean_node, char *buf)
 
 	if (NULL == *list)
 		return ;
+	
+	// Libération de tous les nœuds de la liste
 	while (*list)
 	{
 		tmp = (*list)->next;
@@ -107,8 +109,13 @@ void	dealloc(t_list **list, t_list *clean_node, char *buf)
 		*list = tmp;
 	}
 	*list = NULL;
-	if (clean_node->str_buf[0])
+
+	// Gestion de clean_node
+	if (clean_node != NULL && clean_node->str_buf != NULL && clean_node->str_buf[0])
+	{
 		*list = clean_node;
+		clean_node->next = NULL; // S'assure qu'il n'y a pas de lien
+	}
 	else
 	{
 		free(buf);
